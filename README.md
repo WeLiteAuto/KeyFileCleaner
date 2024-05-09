@@ -12,11 +12,13 @@ To install keyFileCleaner, run the following command:
 
 ```bash
 pip install keyFileCleaner
+```
 
 ## Usage
 
 After installation, you can run keyFileCleaner from the command line
 
 ```bash
-keyfilecleaner path_to_your_directory
+keyfilecleaner 
+```
 
