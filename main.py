@@ -70,7 +70,7 @@ def process_file(file_path: str) -> None:
         print(f"Error decoding {file_path}: {str(e)}")
     except Exception as e:
         print(f"Unhandled exception processing {file_path}: {str(e)}")
-        raise
+        # raise
 
 
 def remove_lines_in_files(directory: str) -> None:
