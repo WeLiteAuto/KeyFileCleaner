@@ -1,5 +1,10 @@
 import os
+import logging
 
+
+# Setup basic configuration for logging
+logging.basicConfig(filename='KeyFileCleaner.log', filemode='a', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 def line_to_keep(line: str) -> bool:
     """
@@ -65,11 +70,12 @@ def process_file(file_path: str) -> None:
         count -= len(new_lines)
         with open(file_path, 'w', encoding='utf-8') as file:
             file.writelines(new_lines)
-        print(f"Processed file: {file_path}, removed {count} lines.")
+        # print(f"Processed file: {file_path}, removed {count} lines.")
+        logging.info(f"Processed file: {file_path}, removed {count} lines.")
     except UnicodeDecodeError as e:
-        print(f"Error decoding {file_path}: {str(e)}")
+        logging.error(f"Error decoding {file_path}: {str(e)}")
     except Exception as e:
-        print(f"Unhandled exception processing {file_path}: {str(e)}")
+        logging.error(f"Unhandled exception processing {file_path}: {str(e)}")
         # raise
 
 
@@ -102,7 +108,7 @@ def remove_lines_in_files(directory: str) -> None:
     if not os.path.isdir(directory):
         raise FileNotFoundError(f"directory {directory} is not a valid directory")
 
-    file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart']
+    file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart', '.file']
     files_removed = 0
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -113,14 +119,14 @@ def remove_lines_in_files(directory: str) -> None:
                 try:
                     os.remove(file_path)
                     files_removed += 1
-                    print(f"Removed file: {file_path}, {files_removed}")
+                    logging.info(f"Removed file: {file_path}, {files_removed}")
                 except Exception as e:
-                    print(f"Failed to remove {file_path}: {str(e)}")
+                    logging.error(f"Failed to remove {file_path}: {str(e)}")
             elif file.endswith('.key'):
                 try:
                     process_file(file_path)
                 except Exception as e:
-                    print(f"Unhandled exception processing {file_path}: {str(e)}")
+                    logging.error(f"Unhandled exception processing {file_path}: {str(e)}")
                     raise
     print("All .key files have been processed.")
 
@@ -156,9 +162,9 @@ def main() -> None:
             directory = os.getcwd()
         remove_lines_in_files(directory)
     except TypeError as e:
-        print(f"Unhandled exception: {str(e)}")
+        logging.error(f"Unhandled exception: {str(e)}")
     except UnicodeEncodeError as e:
-        print(f"Unable to encode directory: {str(e)}")
+        logging.error(f"Unable to encode directory: {str(e)}")
 
 
 if __name__ == "__main__":
