@@ -108,7 +108,7 @@ def remove_lines_in_files(directory: str) -> None:
     if not os.path.isdir(directory):
         raise FileNotFoundError(f"directory {directory} is not a valid directory")
 
-    file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart', '.cfile']
+    file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart', '.cfile', '.log']
     files_removed = 0
     for root, dirs, files in os.walk(directory):
         for file in files:
