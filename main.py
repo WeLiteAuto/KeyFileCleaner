@@ -83,7 +83,7 @@ def remove_lines_in_files(directory: str) -> None:
     """
     Walk through the directory and process each .key file.
 
-    For each file in the directory, check if it has an extension
+    For each file in the directory, check if it has an extension or start
     in file_extensions_to_remove. If so, remove the file.
     If the file is a .key file, process it.
 
@@ -108,14 +108,15 @@ def remove_lines_in_files(directory: str) -> None:
     if not os.path.isdir(directory):
         raise FileNotFoundError(f"directory {directory} is not a valid directory")
 
-    file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart', '.cfile', '.log']
+    file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart', '.cfile']
+    file_starts_to_remove = ["._", "ansa", ".lock"]
     files_removed = 0
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file is None:
                 raise Exception("file is None")
             file_path = os.path.join(root, file)
-            if file.lower().endswith(tuple(file_extensions_to_remove)):
+            if file.lower().endswith(tuple(file_extensions_to_remove)) or file.lower().startswith(tuple(file_starts_to_remove)):
                 try:
                     os.remove(file_path)
                     files_removed += 1
