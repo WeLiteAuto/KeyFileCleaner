@@ -79,7 +79,7 @@ def process_file(file_path: str) -> None:
         # raise
 
 
-def remove_lines_in_files(directory: str) -> None:
+def remove_lines_in_files(directory: str, remove_d3p: bool) -> None:
     """
     Walk through the directory and process each .key file.
 
@@ -109,7 +109,9 @@ def remove_lines_in_files(directory: str) -> None:
         raise FileNotFoundError(f"directory {directory} is not a valid directory")
 
     file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart', '.cfile']
-    file_starts_to_remove = ["._", "ansa", ".lock"]
+    file_starts_to_remove = ["._", "ansa", ".lock", "d3d", "d3f"]
+    if remove_d3p:
+        file_starts_to_remove.append("d3p")
     files_removed = 0
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -122,7 +124,7 @@ def remove_lines_in_files(directory: str) -> None:
                     files_removed += 1
                     logging.info(f"Removed file: {file_path}, {files_removed}")
                 except Exception as e:
-                    logging.error(f"Failed to remove {file_path}: {str(e)}")
+                    logging.error(f"Failed to remove {file_path}`: {str(e)}")
             elif file.endswith('.key'):
                 try:
                     process_file(file_path)
@@ -156,12 +158,20 @@ def main() -> None:
     try:
         print("Welcome to the File Processing Tool")
         directory: str = input("Please enter the directory path to process (Enter for Current Directory): ")
+        d3p_remove = input("Remove d3plot files (y/n):")
+
         # If the user did not enter anything, use the current directory
-        if directory is None:
+        if directory is None or d3p_remove is None:
             raise TypeError("directory is None")
         if len(directory) == 0:
             directory = os.getcwd()
-        remove_lines_in_files(directory)
+
+        if len(d3p_remove) == 0 or d3p_remove.startswith("y"):
+
+            remove_lines_in_files(directory, True)
+        else:
+            remove_lines_in_files(directory, False)
+
     except TypeError as e:
         logging.error(f"Unhandled exception: {str(e)}")
     except UnicodeEncodeError as e:
