@@ -109,7 +109,7 @@ def remove_lines_in_files(directory: str, remove_d3p: bool) -> None:
         raise FileNotFoundError(f"directory {directory} is not a valid directory")
 
     file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart', '.cfile']
-    file_starts_to_remove = ["._", "ansa", ".lock", "d3d", "d3f", "lsrun"]
+    file_starts_to_remove = ["._", "ansa", ".lock", "d3d", "d3f", "lsrun", ".lock","mess", "d3h"]
     if remove_d3p:
         file_starts_to_remove.append("d3p")
     files_removed = 0
