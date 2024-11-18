@@ -63,7 +63,8 @@ def process_file(file_path: str) -> None:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        # with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r') as file:
             lines = file.readlines()
             count = len(lines)
         new_lines = [line for line in lines if line_to_keep(line)]
@@ -109,7 +110,7 @@ def remove_lines_in_files(directory: str, remove_d3p: bool) -> None:
         raise FileNotFoundError(f"directory {directory} is not a valid directory")
 
     file_extensions_to_remove = ['.ansa', '.hm', '.mvw', '.catpart', '.cfile']
-    file_starts_to_remove = ["._", "ansa", ".lock", "d3d", "d3f", "lsrun", ".lock","mess", "d3h"]
+    file_starts_to_remove = ["._", "ansa", ".lock", "d3d", "d3f", "lsrun", ".lock","mess", "d3h", 'lspost']
     if remove_d3p:
         file_starts_to_remove.append("d3p")
     files_removed = 0
@@ -125,7 +126,8 @@ def remove_lines_in_files(directory: str, remove_d3p: bool) -> None:
                     logging.info(f"Removed file: {file_path}, {files_removed}")
                 except Exception as e:
                     logging.error(f"Failed to remove {file_path}`: {str(e)}")
-            elif file.endswith('.key'):
+                    
+            elif file.endswith(('.key', '.k')):
                 try:
                     process_file(file_path)
                 except Exception as e:
