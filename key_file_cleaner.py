@@ -2,7 +2,11 @@ import os
 import logging
 import sys
 import time
-import msvcrt  # Windows-specific module for keyboard input
+if os.name == 'nt':  # Windows
+    import msvcrt
+else:  # macOS and Linux
+    import tty
+    import termios
 
 
 # Setup basic configuration for logging
@@ -137,6 +141,29 @@ def remove_lines_in_files(directory: str, remove_d3p: bool) -> None:
                     logging.error(f"Unhandled exception processing {file_path}: {str(e)}")
                     raise
     print("All .key files have been processed.")
+
+def check_keyboard_interrupt():
+    if os.name == 'nt':  # Windows
+        if msvcrt.kbhit():
+            msvcrt.getch()
+            return True
+    else:  # macOS and Linux
+        try:
+            # Save the terminal settings
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                # Set the terminal to raw mode
+                tty.setraw(sys.stdin.fileno())
+                # Check if there's input waiting
+                if sys.stdin.read(1):
+                    return True
+            finally:
+                # Restore the terminal settings
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        except:
+            pass
+    return False
 
 def wait_key():
     print("\nPress any key to exit...")

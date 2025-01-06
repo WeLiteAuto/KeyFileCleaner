@@ -10,7 +10,6 @@ A toolkit commonly used tools for Weilan Auto
 
 ### Video Generator
 - Generate videos from Test Results
-- Customizable video output parameters
 - Support for various video formats
 
 ## Installation
