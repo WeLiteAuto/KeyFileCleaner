@@ -1,5 +1,8 @@
 import os
 import logging
+import sys
+import time
+import msvcrt  # Windows-specific module for keyboard input
 
 
 # Setup basic configuration for logging
@@ -135,6 +138,41 @@ def remove_lines_in_files(directory: str, remove_d3p: bool) -> None:
                     raise
     print("All .key files have been processed.")
 
+def wait_key():
+    print("\nPress any key to exit...")
+    if getattr(sys, 'frozen', False):
+        while True:
+            if msvcrt.kbhit():
+                msvcrt.getch()
+                break
+            time.sleep(0.1)
+
+def read_file(file_path: str) -> str:
+    encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'latin1']
+    
+    for encoding in encodings:
+        try:
+            with open(file_path, 'r', encoding=encoding) as file:
+                return file.read()
+        except UnicodeDecodeError:
+            continue
+    
+    # If all encodings fail, try with error handling
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as file:
+            logging.warning(f"File {file_path} contains unknown characters that were replaced")
+            return file.read()
+    except Exception as e:
+        logging.error(f"Failed to read file {file_path}: {str(e)}")
+        return ""
+
+def write_file(file_path: str, content: str) -> None:
+    try:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(content)
+    except Exception as e:
+        logging.error(f"Failed to write file {file_path}: {str(e)}")
+ 
 def main() -> None:
     """
     The main entry point for the program.
@@ -178,6 +216,8 @@ def main() -> None:
         logging.error(f"Unhandled exception: {str(e)}")
     except UnicodeEncodeError as e:
         logging.error(f"Unable to encode directory: {str(e)}")
+    finally:
+        wait_key()
 
 
 if __name__ == "__main__":
