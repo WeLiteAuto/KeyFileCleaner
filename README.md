@@ -9,7 +9,7 @@ A toolkit commonly used tools for Weilan Auto
 - Handles multiple file formats and cleaning patterns
 
 ### Video Generator
-- Generate videos from LS-DYNA simulation results
+- Generate videos from Test Results
 - Customizable video output parameters
 - Support for various video formats
 
