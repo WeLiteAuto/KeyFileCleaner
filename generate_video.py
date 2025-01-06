@@ -3,6 +3,13 @@ import shutil
 import cv2
 import numpy as np
 import time
+import logging
+import sys
+import msvcrt
+
+# Setup basic configuration for logging
+logging.basicConfig(filename='VideoGenerator.log', filemode='a', level=logging.INFO,
+                   format='%(asctime)s - %(levelname)s - %(message)s')
 
 def is_leaf_folder(folder_path):
     """
@@ -68,10 +75,10 @@ def generate_mp4_from_images(folder_path, frame_rate=30, output_name="output.mp4
     
     # Try different codecs in order of preference
     codecs = [
-        ('avc1', True),   # H.264 codec
-        ('mp4v', True),   # MPEG-4 codec
-        ('XVID', True),   # XVID codec
-        ('MJPG', True),   # Motion JPEG codec
+        ('mp4v', True),   # Try MPEG-4 first (more widely supported)
+        ('XVID', True),   # Then try XVID
+        ('MJPG', True),   # Then Motion JPEG
+        ('avc1', True),   # H.264 as last resort
     ]
     
     out = None
@@ -79,16 +86,18 @@ def generate_mp4_from_images(folder_path, frame_rate=30, output_name="output.mp4
         try:
             fourcc = cv2.VideoWriter_fourcc(*codec)
             out = cv2.VideoWriter(out_path, fourcc, frame_rate, (width, height), is_color)
-            if out.isOpened():
+            if out is not None and out.isOpened():
+                print(f"Successfully initialized VideoWriter with codec: {codec}")
                 break
+            else:
+                print(f"Failed to initialize VideoWriter with codec: {codec}")
         except Exception as e:
-            print(f"Codec {codec} failed, trying next...")
+            print(f"Error with codec {codec}: {str(e)}")
             if out is not None:
                 out.release()
     
     if out is None or not out.isOpened():
-        print(f"Error: Could not create video writer for {output_name}")
-        return
+        raise RuntimeError(f"Error: Could not create video writer for {output_name}. No compatible codec found.")
     
     print(f"正在生成视频：{folder_path} -> {output_name}")
     
@@ -127,38 +136,74 @@ def generate_mp4_from_images(folder_path, frame_rate=30, output_name="output.mp4
     # 生成完毕后，删除临时图片文件夹
     shutil.rmtree(tmp_folder, ignore_errors=True)
 
+def wait_key():
+    print("\nPress any key to exit...")
+    if getattr(sys, 'frozen', False):
+        while True:
+            if msvcrt.kbhit():
+                msvcrt.getch()
+                break
+            time.sleep(0.1)
+
 def main():
-    # Get input path from user
-    input_path = input("请输入要处理的文件夹路径（直接回车则使用脚本所在目录）：").strip()
-    
-    # Use script directory as default if no input provided
-    if not input_path:
-        root_folder = os.path.dirname(os.path.abspath(__file__))
-    else:
-        root_folder = os.path.abspath(input_path)
-    
-    if not os.path.exists(root_folder):
-        print(f"错误：路径 '{root_folder}' 不存在")
-        return
+    """
+    The main entry point for the video generator.
+    Processes image sequences in leaf folders and converts them to MP4 videos.
+    """
+    start_time = time.time()  # Add start time tracking
+    try:
+        print("Welcome to the Video Generator Tool")
+        # print(cv2.file) 
+        input_path = input("Please enter the directory path to process (Enter for Current Directory): ").strip()
+        
+        # Use script directory as default if no input provided
+        if not input_path:
+            root_folder = os.getcwd()
+        else:
+            # Convert relative path to absolute path
+            root_folder = os.path.abspath(input_path)
+        
+        # Validate directory exists
+        if not os.path.exists(root_folder):
+            raise FileNotFoundError(f"Directory does not exist: {root_folder}")
+        if not os.path.isdir(root_folder):
+            raise NotADirectoryError(f"Path is not a directory: {root_folder}")
 
-    for current_folder, dirs, files in os.walk(root_folder):
-        # 跳过类似 .git、__pycache__ 等非必要目录
-        # 或根据需要排除与脚本同级的一些其他文件夹
-        # if current_folder == root_folder:
-        #     continue
+        processed_folders = 0
+        for current_folder, dirs, files in os.walk(root_folder):
+            if is_leaf_folder(current_folder):
+                try:
+                    new_files = rename_images_in_folder(current_folder)
+                    if len(new_files) > 0:
+                        folder_name = os.path.basename(current_folder)
+                        output_name = f"{folder_name}.mp4"
+                        generate_mp4_from_images(current_folder, frame_rate=30, output_name=output_name)
+                        processed_folders += 1
+                        logging.info(f"Successfully processed folder: {current_folder}")
+                    else:
+                        logging.info(f"Skipped folder (no images): {current_folder}")
+                except Exception as e:
+                    logging.error(f"Error processing folder {current_folder}: {str(e)}")
+                    print(f"\nError processing folder {current_folder}: {str(e)}")
 
-        # 判断是否是叶子文件夹
-        if is_leaf_folder(current_folder):
-            # 收集并重命名图片
-            new_files = rename_images_in_folder(current_folder)
-            if len(new_files) > 0:
-                # Use folder name as the output video filename
-                folder_name = os.path.basename(current_folder)
-                output_name = f"{folder_name}.mp4"
-                # Generate video with the folder name
-                generate_mp4_from_images(current_folder, frame_rate=30, output_name=output_name)
-            else:
-                print(f"跳过：{current_folder}（无图片）")
+        if processed_folders > 0:
+            total_time = time.time() - start_time
+            print(f"\nSuccessfully processed {processed_folders} folders.")
+            print(f"Total processing time: {total_time:.1f} seconds ({total_time/60:.1f} minutes)")
+        else:
+            print("\nNo image sequences found to process.")
+
+    except (FileNotFoundError, NotADirectoryError) as e:
+        print(f"\nError: {str(e)}")
+        logging.error(str(e))
+    except Exception as e:
+        print(f"\nUnexpected error: {str(e)}")
+        logging.error(f"Unhandled exception: {str(e)}")
+    finally:
+        # Add total run time even if there were errors
+        total_run_time = time.time() - start_time
+        print(f"\nTotal run time: {total_run_time:.1f} seconds ({total_run_time/60:.1f} minutes)")
+        wait_key()
 
 if __name__ == "__main__":
     main()

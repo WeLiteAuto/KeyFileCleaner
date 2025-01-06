@@ -197,25 +197,32 @@ def main() -> None:
     """
     try:
         print("Welcome to the File Processing Tool")
-        directory: str = input("Please enter the directory path to process (Enter for Current Directory): ")
-        d3p_remove = input("Remove d3plot files (y/n):")
+        directory: str = input("Please enter the directory path to process (Enter for Current Directory): ").strip()
+        d3p_remove = input("Remove d3plot files (y/n): ").strip().lower()
 
         # If the user did not enter anything, use the current directory
-        if directory is None or d3p_remove is None:
-            raise TypeError("directory is None")
-        if len(directory) == 0:
+        if not directory:
             directory = os.getcwd()
-
-        if len(d3p_remove) == 0 or d3p_remove.startswith("y"):
-
-            remove_lines_in_files(directory, True)
         else:
-            remove_lines_in_files(directory, False)
+            # Convert relative path to absolute path
+            directory = os.path.abspath(directory)
 
-    except TypeError as e:
+        # Validate directory exists
+        if not os.path.exists(directory):
+            raise FileNotFoundError(f"Directory does not exist: {directory}")
+        if not os.path.isdir(directory):
+            raise NotADirectoryError(f"Path is not a directory: {directory}")
+
+        # Process d3p_remove choice
+        remove_d3p = d3p_remove.startswith('y')
+        remove_lines_in_files(directory, remove_d3p)
+
+    except (FileNotFoundError, NotADirectoryError) as e:
+        print(f"\nError: {str(e)}")
+        logging.error(str(e))
+    except Exception as e:
+        print(f"\nUnexpected error: {str(e)}")
         logging.error(f"Unhandled exception: {str(e)}")
-    except UnicodeEncodeError as e:
-        logging.error(f"Unable to encode directory: {str(e)}")
     finally:
         wait_key()
 

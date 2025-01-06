@@ -2,6 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 import os
+import logging
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -28,14 +29,37 @@ def run_key_file_cleaner():
     except ImportError:
         print("Error: Could not import key_file_cleaner module")
         sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"\nError: {str(e)}")
+        input("\nPress Enter to continue...")
+    except Exception as e:
+        print(f"\nUnexpected error: {str(e)}")
+        input("\nPress Enter to continue...")
 
 def run_video_generator():
     try:
+        # Get the application path (works in both dev and packaged environments)
+        if getattr(sys, 'frozen', False):
+            # Running in a PyInstaller bundle
+            application_path = os.path.dirname(sys.executable)
+        else:
+            # Running in normal Python environment
+            application_path = os.path.dirname(os.path.abspath(__file__))
+        
+        # Add the application path to sys.path
+        if application_path not in sys.path:
+            sys.path.insert(0, application_path)
+        
         from generate_video import main as video_generator_main
         video_generator_main()
-    except ImportError:
-        print("Error: Could not import generate_video module")
-        sys.exit(1)
+    except ImportError as e:
+        print(f"Error: Could not import generate_video module ({str(e)})")
+        logging.error(f"Import error in run_video_generator: {str(e)}")
+        input("\nPress Enter to continue...")
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        logging.error(f"Unexpected error in run_video_generator: {str(e)}")
+        input("\nPress Enter to continue...")
 
 def interactive_mode():
     while True:
