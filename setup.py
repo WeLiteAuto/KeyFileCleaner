@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='WeilanToolkit',  # Project name
     version='0.2',  # Updated version
-    author='GEYulong',
+    author='weilanauto',
     author_email='drivelytics@weilanauto.com',  # Updated email from README
     description='A toolkit containing commonly used tools for Weilan Auto',
     long_description=open('README.md').read(),
@@ -22,10 +22,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
         'Operating System :: OS Independent',
         'Topic :: Scientific/Engineering',
         'Topic :: Utilities',
