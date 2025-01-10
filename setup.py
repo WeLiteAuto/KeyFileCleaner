@@ -1,34 +1,39 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='KeyFileCleaner',  # Updated project name
-    version='0.1',  # Initial version of your project
-    author='GEYulong',  # Replace with your name
-    author_email='geyulong@weilanauto.com',  # Replace with your email
-    description='A utility to remove specific pre-processor information and files in directories for ls-dyna projects',  # Updated description to specify functionality
-    long_description=open('README.md').read(),  # Long description from README.md
-    long_description_content_type='text/markdown',  # Specifies that the long description is in Markdown
-    url='https://github.com/weliteauto/KEYFILECLEANER',  # Updated URL to match project name
-    packages=find_packages(),  # Automatically find and include all packages
+    name='WeilanToolkit',  # Project name
+    version='0.2',  # Updated version
+    author='weilanauto',
+    author_email='drivelytics@weilanauto.com',  # Updated email from README
+    description='A toolkit containing commonly used tools for Weilan Auto',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
+    url='https://github.com/weilan-auto/WeilanToolkit',
+    packages=find_packages(),
     install_requires=[
-        # List any dependencies your project needs here.
-        # Example: 'numpy', 'pandas' if your project uses these packages
+        'pandas>=1.5.0,<2.0.0',
+        'numpy==1.24.3',
+        'opencv-python==4.8.1.78',
+        'moviepy==1.0.3',
+        'python-dotenv>=1.0.0',
     ],
     classifiers=[
-        'Development Status :: 4 - Beta',  # Indicates the project is in beta stage
-        'Intended Audience :: Developers',  # Target audience
-        'License :: OSI Approved :: MIT License',  # License type
-        'Programming Language :: Python :: 3',  # Supported Python versions
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.9',
         'Operating System :: OS Independent',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Utilities',
     ],
-    python_requires='>=3.7',  # Minimum required Python version
+    python_requires='>=3.8',
     entry_points={
         'console_scripts': [
-            'keyfilecleaner=KeYFILECLEANER.main:main',  # Ensure 'KeYFILECLEANER' matches your package structure
+            'weilan-toolkit=main:main',
+            'key-cleaner=key_file_cleaner:main',
+            'video-generator=generate_video:main',
         ],
     },
-    include_package_data=True,  # Include any non-code files specified in MANIFEST.in
+    include_package_data=True,
 )

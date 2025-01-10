@@ -5,7 +5,11 @@ import numpy as np
 import time
 import logging
 import sys
-import msvcrt
+if os.name == 'nt':  # Windows
+    import msvcrt
+else:  # macOS and Linux
+    import tty
+    import termios
 
 # Setup basic configuration for logging
 logging.basicConfig(filename='VideoGenerator.log', filemode='a', level=logging.INFO,
@@ -135,6 +139,29 @@ def generate_mp4_from_images(folder_path, frame_rate=30, output_name="output.mp4
     
     # 生成完毕后，删除临时图片文件夹
     shutil.rmtree(tmp_folder, ignore_errors=True)
+
+def check_keyboard_interrupt():
+    if os.name == 'nt':  # Windows
+        if msvcrt.kbhit():
+            msvcrt.getch()
+            return True
+    else:  # macOS and Linux
+        try:
+            # Save the terminal settings
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                # Set the terminal to raw mode
+                tty.setraw(sys.stdin.fileno())
+                # Check if there's input waiting
+                if sys.stdin.read(1):
+                    return True
+            finally:
+                # Restore the terminal settings
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        except:
+            pass
+    return False
 
 def wait_key():
     print("\nPress any key to exit...")
